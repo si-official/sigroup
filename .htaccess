@@ -1,3 +1,3 @@
-# Route all requests to backend API
 RewriteEngine On
+RewriteCond %{REQUEST_URI} !^/backend/api/public/
 RewriteRule ^(.*)$ /backend/api/public/index.php [L,QSA]
