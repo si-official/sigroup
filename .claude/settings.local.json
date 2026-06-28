@@ -1,0 +1,31 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm --version)",
+      "Bash(npx create-next-app@14 frontend --typescript --tailwind --eslint --app --no-src-dir --import-alias \"@/*\" --use-npm)",
+      "mcp__Claude_in_Chrome__list_connected_browsers",
+      "mcp__Claude_in_Chrome__navigate",
+      "mcp__Claude_in_Chrome__read_page",
+      "mcp__Claude_in_Chrome__get_page_text",
+      "mcp__Claude_in_Chrome__find",
+      "mcp__Claude_in_Chrome__form_input",
+      "mcp__Claude_in_Chrome__javascript_tool",
+      "mcp__Claude_in_Chrome__browser_batch",
+      "Bash(npm run *)",
+      "Bash(npm install *)",
+      "Bash(mkdir -p /Applications/XAMPP/xamppfiles/htdocs/sigroup/apps/portal)",
+      "Bash(cp -r ../main/node_modules .)",
+      "Bash(cp ../main/package.json .)",
+      "Bash(cp ../main/tsconfig.json .)",
+      "Bash(cp ../main/tailwind.config.ts .)",
+      "Bash(sed -i '' 's/import type { NextConfig } from .next.//' next.config.mjs)",
+      "Bash(sed -i '' 's/const nextConfig: NextConfig/const nextConfig/' next.config.mjs)",
+      "mcp__visualize__read_me",
+      "mcp__visualize__show_widget",
+      "Bash(chmod +x /Applications/XAMPP/xamppfiles/htdocs/sigroup/deploy.sh)",
+      "Bash(git init *)",
+      "Bash(git add *)",
+      "Bash(git commit *)"
+    ]
+  }
+}
