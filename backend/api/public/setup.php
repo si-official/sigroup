@@ -43,7 +43,7 @@ try {
         [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]
     );
 
-    $sql = file_get_contents(dirname(__DIR__, 2) . '/database/schema.sql');
+    $sql = file_get_contents(dirname(__DIR__) . '/database/schema.sql');
     // Split on semicolons, skip comments
     $statements = array_filter(array_map('trim', explode(';', $sql)));
     $count = 0;
