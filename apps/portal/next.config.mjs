@@ -1,15 +1,8 @@
-
-
+/** @type {import('next').NextConfig} */
 const nextConfig = {
-  // Allow all sigroup.com.bd subdomains
-  async headers() {
-    return [
-      {
-        source: '/(.*)',
-        headers: [{ key: 'X-Frame-Options', value: 'SAMEORIGIN' }],
-      },
-    ]
-  },
-}
+  output: 'export',
+  trailingSlash: true,
+  images: { unoptimized: true },
+};
 
-export default nextConfig
+export default nextConfig;

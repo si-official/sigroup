@@ -9,7 +9,7 @@ export default function ProductCard({ product }: { product: Product }) {
 
   return (
     <div className="bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden group">
-      <Link href={`/products/${product.slug}`}>
+      <Link href={`/products/view?slug=${product.slug}`}>
         <div className="bg-gradient-to-br from-gray-50 to-gray-100 h-48 flex items-center justify-center relative overflow-hidden">
           <span className="text-6xl">💾</span>
           {product.badge && (
@@ -27,7 +27,7 @@ export default function ProductCard({ product }: { product: Product }) {
 
       <div className="p-5">
         <span className="text-xs text-green-600 font-semibold bg-green-50 px-2 py-0.5 rounded-full">{product.category}</span>
-        <Link href={`/products/${product.slug}`}>
+        <Link href={`/products/view?slug=${product.slug}`}>
           <h3 className="font-bold text-gray-900 mt-2 mb-1 hover:text-green-700 transition line-clamp-1">{product.name}</h3>
         </Link>
         <p className="text-gray-500 text-sm mb-3 line-clamp-2">{product.description}</p>

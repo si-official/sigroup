@@ -1,12 +1,14 @@
 'use client'
-import { use, useState } from 'react'
+import { useState, Suspense } from 'react'
 import { notFound, useRouter } from 'next/navigation'
+import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { getCourseBySlug } from '@/lib/courses'
 import { useStudent } from '@/context/StudentContext'
 
-export default function QuizPage({ params }: { params: Promise<{ slug: string }> }) {
-  const { slug } = use(params)
+function QuizContent() {
+  const searchParams = useSearchParams()
+  const slug = searchParams.get('slug') ?? ''
   const course = getCourseBySlug(slug)
   const { saveQuizScore, isEnrolled } = useStudent()
   const router = useRouter()
@@ -18,7 +20,7 @@ export default function QuizPage({ params }: { params: Promise<{ slug: string }>
   const [showExplanation, setShowExplanation] = useState(false)
 
   if (!course) notFound()
-  if (!isEnrolled(course.id)) { router.push(`/courses/${slug}`); return null }
+  if (!isEnrolled(course.id)) { router.push(`/courses/view?slug=${slug}`); return null }
 
   const questions = course.quiz
   const q = questions[current]
@@ -70,12 +72,12 @@ export default function QuizPage({ params }: { params: Promise<{ slug: string }>
           </div>
           <div className="flex gap-3">
             {passed && (
-              <Link href={`/certificate/${course.id}`}
+              <Link href={`/certificate/view?id=${course.id}`}
                 className="flex-1 bg-green-600 text-white py-3 rounded-xl font-bold hover:bg-green-500 transition text-sm">
                 Get Certificate 🏆
               </Link>
             )}
-            <Link href={`/courses/${slug}/learn`}
+            <Link href={`/courses/view/learn?slug=${slug}`}
               className="flex-1 bg-yellow-600 text-white py-3 rounded-xl font-bold hover:bg-yellow-500 transition text-sm">
               {passed ? 'Back to Course' : 'Retry Quiz'}
             </Link>
@@ -88,7 +90,6 @@ export default function QuizPage({ params }: { params: Promise<{ slug: string }>
   return (
     <div className="min-h-screen bg-gray-900 flex items-center justify-center p-6">
       <div className="bg-white rounded-3xl max-w-xl w-full p-8">
-        {/* Progress */}
         <div className="flex justify-between items-center mb-6">
           <span className="text-sm font-semibold text-gray-500">Question {current + 1} of {questions.length}</span>
           <div className="flex gap-1">
@@ -135,5 +136,13 @@ export default function QuizPage({ params }: { params: Promise<{ slug: string }>
         )}
       </div>
     </div>
+  )
+}
+
+export default function QuizPage() {
+  return (
+    <Suspense fallback={<div className="p-10 text-center text-white bg-gray-900 min-h-screen">Loading...</div>}>
+      <QuizContent />
+    </Suspense>
   )
 }

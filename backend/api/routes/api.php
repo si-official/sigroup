@@ -5,6 +5,7 @@ use App\Controllers\InvoiceController;
 use App\Controllers\TicketController;
 use App\Controllers\PartnerController;
 use App\Controllers\AdminController;
+use App\Controllers\PaymentController;
 use App\Middleware\AuthMiddleware;
 
 $uri = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
@@ -63,6 +64,22 @@ match(true) {
     // Admin
     $uri === '/admin/stats' && $method === 'GET'  => AdminController::stats(requireAuth()),
     $uri === '/admin/users' && $method === 'GET'  => AdminController::users(requireAuth()),
+
+    // Download (shop digital products)
+    preg_match('#^/download/([^/]+)$#', $uri, $m) && $method === 'GET'
+                                                  => PaymentController::download($m[1]),
+
+    // Payment init (frontend calls these to get SSLCommerz URL)
+    preg_match('#^/payment/(shop|school)/init$#', $uri, $m) && $method === 'POST'
+                                                  => PaymentController::init($m[1]),
+
+    // Payment callbacks (SSLCommerz POSTs to these)
+    preg_match('#^/payment/(shop|school)/success$#', $uri, $m)
+                                                  => PaymentController::success($m[1]),
+    preg_match('#^/payment/(shop|school)/fail$#', $uri, $m)
+                                                  => PaymentController::fail($m[1]),
+    preg_match('#^/payment/(shop|school)/cancel$#', $uri, $m)
+                                                  => PaymentController::cancel($m[1]),
 
     // Health
     $uri === '/health' && $method === 'GET'       => respond(200, ['status' => 'ok', 'version' => '1.0']),

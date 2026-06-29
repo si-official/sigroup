@@ -1,21 +1,22 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 'use client'
-import { use, useState } from 'react'
+import { useState, Suspense } from 'react'
 import { notFound } from 'next/navigation'
+import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import Navbar from '@/components/Navbar'
 import { getCourseBySlug } from '@/lib/courses'
 import { useStudent } from '@/context/StudentContext'
 
-export default function CourseDetailPage({ params }: { params: Promise<{ slug: string }> }) {
-  const { slug } = use(params)
+function CourseDetailContent() {
+  const searchParams = useSearchParams()
+  const slug = searchParams.get('slug') ?? ''
   const course = getCourseBySlug(slug)
   const { isEnrolled } = useStudent()
   const [openSection, setOpenSection] = useState<string | null>('s1')
 
   if (!course) notFound()
   const enrolled = isEnrolled(course.id)
-
   const totalLessons = course.sections.reduce((sum, s) => sum + s.lessons.length, 0)
 
   return (
@@ -40,7 +41,6 @@ export default function CourseDetailPage({ params }: { params: Promise<{ slug: s
             <p className="text-gray-400 text-sm mt-3">Instructor: <span className="text-white font-semibold">{course.instructor}</span> — {course.instructorTitle}</p>
           </div>
 
-          {/* Sticky buy card */}
           <div className="bg-white text-gray-900 rounded-2xl p-6 h-fit shadow-2xl">
             <div className="bg-gradient-to-br from-yellow-50 to-orange-100 rounded-xl h-40 flex items-center justify-center mb-4">
               <span className="text-6xl">🎓</span>
@@ -50,7 +50,7 @@ export default function CourseDetailPage({ params }: { params: Promise<{ slug: s
               {course.originalPrice && <span className="text-gray-400 line-through">৳{course.originalPrice.toLocaleString()}</span>}
             </div>
             {enrolled ? (
-              <Link href={`/courses/${course.slug}/learn`}
+              <Link href={`/courses/view/learn?slug=${course.slug}`}
                 className="block text-center w-full bg-green-600 text-white py-3.5 rounded-xl font-bold hover:bg-green-500 transition">
                 Continue Learning →
               </Link>
@@ -60,7 +60,7 @@ export default function CourseDetailPage({ params }: { params: Promise<{ slug: s
                   className="block text-center w-full bg-yellow-600 text-white py-3.5 rounded-xl font-bold hover:bg-yellow-500 transition mb-3">
                   Enroll Now
                 </Link>
-                <Link href={`/courses/${course.slug}/learn`}
+                <Link href={`/courses/view/learn?slug=${course.slug}`}
                   className="block text-center w-full border border-gray-200 text-gray-700 py-3 rounded-xl font-semibold text-sm hover:bg-gray-50 transition">
                   Preview Free Lessons
                 </Link>
@@ -78,7 +78,6 @@ export default function CourseDetailPage({ params }: { params: Promise<{ slug: s
 
       <main className="max-w-7xl mx-auto px-6 py-10 grid grid-cols-1 lg:grid-cols-3 gap-8">
         <div className="lg:col-span-2 space-y-8">
-          {/* What you'll learn */}
           <div className="bg-white rounded-2xl border border-gray-100 p-6">
             <h2 className="text-xl font-bold text-gray-900 mb-4">কী শিখবেন</h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -90,7 +89,6 @@ export default function CourseDetailPage({ params }: { params: Promise<{ slug: s
             </div>
           </div>
 
-          {/* Curriculum */}
           <div className="bg-white rounded-2xl border border-gray-100 p-6">
             <h2 className="text-xl font-bold text-gray-900 mb-4">Curriculum</h2>
             <div className="space-y-3">
@@ -126,7 +124,6 @@ export default function CourseDetailPage({ params }: { params: Promise<{ slug: s
           </div>
         </div>
 
-        {/* Requirements */}
         <div>
           <div className="bg-white rounded-2xl border border-gray-100 p-6">
             <h3 className="font-bold text-gray-900 mb-3">Requirements</h3>
@@ -139,5 +136,13 @@ export default function CourseDetailPage({ params }: { params: Promise<{ slug: s
         </div>
       </main>
     </>
+  )
+}
+
+export default function CourseDetailPage() {
+  return (
+    <Suspense fallback={<div className="p-10 text-center">Loading...</div>}>
+      <CourseDetailContent />
+    </Suspense>
   )
 }

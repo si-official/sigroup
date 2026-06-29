@@ -22,7 +22,7 @@ function CheckoutContent() {
       <div className="max-w-lg mx-auto text-center py-20 px-6">
         <div className="text-5xl mb-4">✅</div>
         <h2 className="text-2xl font-black text-gray-900 mb-3">Already Enrolled!</h2>
-        <Link href={`/courses/${course.slug}/learn`} className="bg-yellow-600 text-white px-6 py-3 rounded-xl font-bold hover:bg-yellow-500 transition">
+        <Link href={`/courses/view?slug=${course.slug}`} className="bg-yellow-600 text-white px-6 py-3 rounded-xl font-bold hover:bg-yellow-500 transition">
           Continue Learning →
         </Link>
       </div>
@@ -33,7 +33,7 @@ function CheckoutContent() {
     e.preventDefault()
     setLoading(true)
     try {
-      const res = await fetch('/api/payment/init', {
+      const res = await fetch('https://api.sigroup.com.bd/payment/school/init', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ ...form, courseId: course.id, amount: course.price, productName: course.title }),

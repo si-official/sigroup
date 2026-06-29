@@ -95,12 +95,12 @@ export default function DashboardPage() {
                     </div>
                   </div>
                   <div className="flex gap-2 mt-4">
-                    <Link href={`/courses/${course!.slug}/learn`}
+                    <Link href={`/courses/view?slug=${course!.slug}`}
                       className="flex-1 text-center bg-yellow-600 text-white py-2 rounded-xl text-sm font-semibold hover:bg-yellow-500 transition">
                       Continue
                     </Link>
                     {certificateIssued && (
-                      <Link href={`/certificate/${course!.id}`}
+                      <Link href={`/certificate/view?id=${course!.id}`}
                         className="flex-1 text-center bg-green-600 text-white py-2 rounded-xl text-sm font-semibold hover:bg-green-500 transition">
                         🏆 Certificate
                       </Link>

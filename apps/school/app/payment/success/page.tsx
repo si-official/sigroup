@@ -19,7 +19,7 @@ function SuccessContent() {
       <div className="text-6xl mb-4">🎉</div>
       <h1 className="text-3xl font-black text-gray-900 mb-3">Enrollment Successful!</h1>
       <p className="text-gray-500 mb-6">আপনি সফলভাবে <strong>{course?.title}</strong> এ enroll করেছেন।</p>
-      <Link href={`/courses/${course?.slug}/learn`} className="block w-full bg-yellow-600 text-white py-4 rounded-2xl font-bold hover:bg-yellow-500 transition mb-3">
+      <Link href={`/courses/view?slug=${course?.slug}`} className="block w-full bg-yellow-600 text-white py-4 rounded-2xl font-bold hover:bg-yellow-500 transition mb-3">
         Start Learning Now →
       </Link>
       <Link href="/dashboard" className="text-gray-500 hover:text-gray-700 text-sm">Go to Dashboard</Link>

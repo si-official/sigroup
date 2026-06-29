@@ -1,14 +1,16 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 'use client'
-import { use, useState } from 'react'
+import { useState, Suspense } from 'react'
 import { notFound } from 'next/navigation'
+import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { getCourseBySlug } from '@/lib/courses'
 import { useStudent } from '@/context/StudentContext'
 import { Lesson } from '@/lib/types'
 
-export default function LearnPage({ params }: { params: Promise<{ slug: string }> }) {
-  const { slug } = use(params)
+function LearnContent() {
+  const searchParams = useSearchParams()
+  const slug = searchParams.get('slug') ?? ''
   const course = getCourseBySlug(slug)
   const { isEnrolled, completeLesson, getProgress } = useStudent()
 
@@ -35,10 +37,9 @@ export default function LearnPage({ params }: { params: Promise<{ slug: string }
 
   return (
     <div className="flex h-screen bg-gray-900 overflow-hidden">
-      {/* Sidebar */}
       <div className="w-80 bg-gray-950 flex-shrink-0 overflow-y-auto">
         <div className="p-4 border-b border-gray-800">
-          <Link href={`/courses/${slug}`} className="text-gray-400 hover:text-white text-sm">← Back</Link>
+          <Link href={`/courses/view?slug=${slug}`} className="text-gray-400 hover:text-white text-sm">← Back</Link>
           <h2 className="text-white font-bold mt-2 text-sm line-clamp-2">{course.title}</h2>
           {enrolled && (
             <div className="mt-3">
@@ -88,12 +89,12 @@ export default function LearnPage({ params }: { params: Promise<{ slug: string }
 
         {enrolled && completePct === 100 && (
           <div className="p-4">
-            <Link href={`/courses/${slug}/learn/quiz`}
+            <Link href={`/courses/view/learn/quiz?slug=${slug}`}
               className="block text-center bg-yellow-600 text-white py-3 rounded-xl font-bold hover:bg-yellow-500 transition text-sm">
               📝 Take Final Quiz
             </Link>
             {progress?.certificateIssued && (
-              <Link href={`/certificate/${course.id}`}
+              <Link href={`/certificate/view?id=${course.id}`}
                 className="block text-center mt-2 bg-green-600 text-white py-3 rounded-xl font-bold hover:bg-green-500 transition text-sm">
                 🏆 Get Certificate
               </Link>
@@ -102,7 +103,6 @@ export default function LearnPage({ params }: { params: Promise<{ slug: string }
         )}
       </div>
 
-      {/* Video Area */}
       <div className="flex-1 flex flex-col overflow-hidden">
         {activeLesson ? (
           <>
@@ -118,7 +118,7 @@ export default function LearnPage({ params }: { params: Promise<{ slug: string }
                 <div className="text-white text-center">
                   <div className="text-6xl mb-4">📝</div>
                   <p className="text-xl font-bold mb-4">{activeLesson.title}</p>
-                  <Link href={`/courses/${slug}/learn/quiz`}
+                  <Link href={`/courses/view/learn/quiz?slug=${slug}`}
                     className="bg-yellow-500 text-black px-8 py-3 rounded-xl font-bold hover:bg-yellow-400 transition">
                     Start Quiz →
                   </Link>
@@ -148,5 +148,13 @@ export default function LearnPage({ params }: { params: Promise<{ slug: string }
         )}
       </div>
     </div>
+  )
+}
+
+export default function LearnPage() {
+  return (
+    <Suspense fallback={<div className="p-10 text-center text-white bg-gray-900 min-h-screen">Loading...</div>}>
+      <LearnContent />
+    </Suspense>
   )
 }

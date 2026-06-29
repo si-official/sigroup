@@ -1,13 +1,15 @@
 'use client'
-import { use, useState } from 'react'
+import { useState, Suspense } from 'react'
 import { notFound } from 'next/navigation'
+import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import Navbar from '@/components/Navbar'
 import { getProductBySlug } from '@/lib/products'
 import { useCart } from '@/context/CartContext'
 
-export default function ProductPage({ params }: { params: Promise<{ slug: string }> }) {
-  const { slug } = use(params)
+function ProductContent() {
+  const searchParams = useSearchParams()
+  const slug = searchParams.get('slug') ?? ''
   const product = getProductBySlug(slug)
   const { addToCart, items } = useCart()
   const [previewOpen, setPreviewOpen] = useState(false)
@@ -40,7 +42,6 @@ export default function ProductPage({ params }: { params: Promise<{ slug: string
               👁 Preview Screenshots
             </button>
 
-            {/* Features list */}
             <div className="mt-6 bg-white rounded-2xl border border-gray-100 p-6">
               <h3 className="font-bold text-gray-900 mb-4">What&apos;s Included</h3>
               <ul className="space-y-2">
@@ -91,7 +92,7 @@ export default function ProductPage({ params }: { params: Promise<{ slug: string
 
               {inCart && (
                 <Link href="/cart" className="block w-full text-center py-3 border-2 border-green-700 text-green-700 rounded-2xl font-bold hover:bg-green-50 transition">
-                  Go to Cart & Checkout →
+                  Go to Cart &amp; Checkout →
                 </Link>
               )}
             </div>
@@ -107,7 +108,6 @@ export default function ProductPage({ params }: { params: Promise<{ slug: string
         </div>
       </main>
 
-      {/* Preview Modal */}
       {previewOpen && (
         <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-6" onClick={() => setPreviewOpen(false)}>
           <div className="bg-white rounded-3xl max-w-2xl w-full p-8" onClick={(e) => e.stopPropagation()}>
@@ -126,5 +126,13 @@ export default function ProductPage({ params }: { params: Promise<{ slug: string
         </div>
       )}
     </>
+  )
+}
+
+export default function ProductPage() {
+  return (
+    <Suspense fallback={<div className="p-10 text-center">Loading...</div>}>
+      <ProductContent />
+    </Suspense>
   )
 }

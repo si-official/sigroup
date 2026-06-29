@@ -1,12 +1,14 @@
 'use client'
-import { use } from 'react'
+import { Suspense } from 'react'
+import { useSearchParams } from 'next/navigation'
 import { useStudent } from '@/context/StudentContext'
 import { courses } from '@/lib/courses'
 import Link from 'next/link'
 import Navbar from '@/components/Navbar'
 
-export default function CertificatePage({ params }: { params: Promise<{ courseId: string }> }) {
-  const { courseId } = use(params)
+function CertificateContent() {
+  const searchParams = useSearchParams()
+  const courseId = searchParams.get('id') ?? ''
   const { student, getProgress } = useStudent()
   const course = courses.find((c) => c.id === courseId)
   const progress = getProgress(courseId)
@@ -46,9 +48,7 @@ export default function CertificatePage({ params }: { params: Promise<{ courseId
           <Link href="/dashboard" className="text-gray-500 hover:text-gray-700 text-sm">← Dashboard</Link>
         </div>
 
-        {/* Certificate */}
         <div id="certificate" className="bg-white border-8 border-yellow-600 rounded-3xl p-12 text-center relative overflow-hidden shadow-2xl print:shadow-none">
-          {/* Background decoration */}
           <div className="absolute inset-0 opacity-5">
             <div className="absolute top-10 left-10 w-40 h-40 border-8 border-yellow-600 rounded-full" />
             <div className="absolute bottom-10 right-10 w-40 h-40 border-8 border-yellow-600 rounded-full" />
@@ -100,5 +100,13 @@ export default function CertificatePage({ params }: { params: Promise<{ courseId
         </div>
       </div>
     </>
+  )
+}
+
+export default function CertificatePage() {
+  return (
+    <Suspense fallback={<div className="p-10 text-center">Loading...</div>}>
+      <CertificateContent />
+    </Suspense>
   )
 }
