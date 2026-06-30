@@ -2,7 +2,7 @@
 // One-time setup script — DELETE AFTER USE
 // Access: https://api.sigroup.com.bd/setup.php?key=SI_SETUP_2024
 
-if (($_GET['key'] ?? '') !== 'SI_SETUP_2024') {
+if (PHP_SAPI !== 'cli' && ($_GET['key'] ?? '') !== 'SI_SETUP_2024') {
     http_response_code(403);
     exit(json_encode(['error' => 'Forbidden']));
 }
