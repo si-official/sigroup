@@ -39,9 +39,9 @@ const tiers = [
     name: 'Platinum Partner',
     price: 'Custom',
     period: 'pricing',
-    color: 'from-blue-500 to-indigo-600',
-    border: 'border-blue-300',
-    badge: 'bg-blue-100 text-blue-700',
+    color: 'from-red-600 to-red-900',
+    border: 'border-red-700',
+    badge: 'bg-red-600 text-red-400',
     features: [
       'All Gold benefits',
       'Exclusive territory rights',
@@ -51,7 +51,7 @@ const tiers = [
       'Equity participation option',
     ],
     cta: 'Contact Us',
-    ctaClass: 'bg-blue-900 text-white hover:bg-blue-800',
+    ctaClass: 'bg-red-600 text-white hover:bg-red-600',
   },
 ]
 
@@ -60,7 +60,7 @@ export default function Partnership() {
     <section id="partnership" className="py-24 bg-white">
       <div className="max-w-7xl mx-auto px-6">
         <div className="text-center mb-16">
-          <span className="text-blue-600 font-semibold text-sm uppercase tracking-widest">Partner With Us</span>
+          <span className="text-red-400 font-semibold text-sm uppercase tracking-widest">Partner With Us</span>
           <h2 className="text-4xl md:text-5xl font-black text-gray-900 mt-3 mb-4">
             Partnership Programs
           </h2>

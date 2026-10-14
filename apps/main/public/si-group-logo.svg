@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 520 130" fill="none">
+  <!-- Circle emblem -->
+  <circle cx="65" cy="65" r="60" fill="white" stroke="#1a0a00" stroke-width="5"/>
+
+  <!-- S letter -->
+  <path d="
+    M 45 38
+    C 32 38 26 45 26 54
+    C 26 63 33 68 44 71
+    L 54 74
+    C 62 76 66 80 66 86
+    C 66 93 60 98 50 98
+    C 40 98 33 93 30 86
+    L 22 90
+    C 26 100 37 107 50 107
+    C 65 107 74 99 74 87
+    C 74 76 67 70 55 67
+    L 46 64
+    C 38 62 34 58 34 52
+    C 34 46 39 42 47 42
+    C 55 42 61 46 64 52
+    L 72 48
+    C 68 41 58 38 45 38 Z
+  " fill="#1a0a00"/>
+
+  <!-- i dot (red) -->
+  <circle cx="88" cy="43" r="8" fill="#dc2626"/>
+
+  <!-- i stem -->
+  <rect x="83" y="56" width="10" height="48" rx="3" fill="#1a0a00"/>
+
+  <!-- GROUP text -->
+  <!-- G -->
+  <text x="148" y="98" font-family="Arial Black, Arial" font-weight="900" font-size="78" fill="#1a0a00" letter-spacing="-2">GROUP</text>
+</svg>

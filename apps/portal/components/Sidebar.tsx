@@ -12,7 +12,14 @@ const partnerNav = [
   { href: '/partner', icon: '🤝', label: 'Partner Hub' },
 ]
 const adminNav = [
-  { href: '/admin', icon: '⚙️', label: 'Admin Panel' },
+  { href: '/admin', icon: '🏠', label: 'Admin Overview' },
+  { href: '/admin/platforms', icon: '🏢', label: 'Business Platforms' },
+  { href: '/admin/shop', icon: '🛍️', label: 'SI Shop' },
+  { href: '/admin/software', icon: '💾', label: 'Software Market' },
+  { href: '/admin/school', icon: '🎓', label: 'SI School' },
+  { href: '/admin/devservices', icon: '⚙️', label: 'Dev Services' },
+  { href: '/admin/logo', icon: '🔴', label: 'Logo Manager' },
+  { href: '/admin/images', icon: '🖼️', label: 'Image Manager' },
 ]
 
 export default function Sidebar() {
@@ -57,18 +64,44 @@ export default function Sidebar() {
         </div>
       )}
 
-      <nav className="flex-1 p-4 space-y-1">
-        {navItems.map((item) => (
+      <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
+        {clientNav.map((item) => (
           <Link key={item.href} href={item.href}
             className={`flex items-center gap-3 px-4 py-3 rounded-xl transition text-sm font-medium ${
-              path === item.href
-                ? 'bg-purple-600 text-white'
-                : 'text-gray-400 hover:bg-gray-800 hover:text-white'
+              path === item.href ? 'bg-purple-600 text-white' : 'text-gray-400 hover:bg-gray-800 hover:text-white'
             }`}>
-            <span>{item.icon}</span>
-            {item.label}
+            <span>{item.icon}</span>{item.label}
           </Link>
         ))}
+
+        {(user?.role === 'partner' || user?.role === 'admin') && (
+          <>
+            {partnerNav.map((item) => (
+              <Link key={item.href} href={item.href}
+                className={`flex items-center gap-3 px-4 py-3 rounded-xl transition text-sm font-medium ${
+                  path === item.href ? 'bg-purple-600 text-white' : 'text-gray-400 hover:bg-gray-800 hover:text-white'
+                }`}>
+                <span>{item.icon}</span>{item.label}
+              </Link>
+            ))}
+          </>
+        )}
+
+        {user?.role === 'admin' && (
+          <>
+            <div className="pt-3 pb-1 px-4">
+              <p className="text-gray-600 text-xs uppercase tracking-widest font-bold">Admin</p>
+            </div>
+            {adminNav.map((item) => (
+              <Link key={item.href} href={item.href}
+                className={`flex items-center gap-3 px-4 py-2.5 rounded-xl transition text-sm font-medium ${
+                  path === item.href ? 'bg-red-900/60 text-red-300 border border-red-800' : 'text-gray-400 hover:bg-gray-800 hover:text-white'
+                }`}>
+                <span>{item.icon}</span>{item.label}
+              </Link>
+            ))}
+          </>
+        )}
       </nav>
 
       <div className="p-4 border-t border-gray-800">

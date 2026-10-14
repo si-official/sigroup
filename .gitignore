@@ -12,3 +12,15 @@ storage/framework/views/
 bootstrap/cache/
 # backend/api/vendor committed for Hostinger deployment
 backend/api/.env
+
+# Next.js static-export build output (never committed — deployed via upload)
+out/
+/_next/
+/404.html
+/404/
+/index.html
+/index.txt
+/favicon.ico
+
+# Claude Code agent worktrees (local scratch)
+.claude/worktrees/

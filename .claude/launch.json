@@ -1,0 +1,39 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "SI Group Main Site",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "dev"],
+      "port": 3000,
+      "autoPort": false,
+      "cwd": "/Applications/XAMPP/xamppfiles/htdocs/sigroup/apps/main"
+    },
+    {
+      "name": "SI Shop",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "dev", "--", "-p", "3001"],
+      "port": 3001,
+      "autoPort": false,
+      "cwd": "/Applications/XAMPP/xamppfiles/htdocs/sigroup/apps/shop"
+    }
+  ,
+    {
+      "name": "SI School",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "dev", "--", "-p", "3002"],
+      "port": 3002,
+      "autoPort": false,
+      "cwd": "/Applications/XAMPP/xamppfiles/htdocs/sigroup/apps/school"
+    }
+  ,
+    {
+      "name": "SI Portal",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "dev", "--", "-p", "3003"],
+      "port": 3003,
+      "autoPort": false,
+      "cwd": "/Applications/XAMPP/xamppfiles/htdocs/sigroup/apps/portal"
+    }
+  ]
+}

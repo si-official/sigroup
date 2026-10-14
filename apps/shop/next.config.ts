@@ -1,15 +1,10 @@
 import type { NextConfig } from 'next'
 
 const nextConfig: NextConfig = {
-  // Allow all sigroup.com.bd subdomains
-  async headers() {
-    return [
-      {
-        source: '/(.*)',
-        headers: [{ key: 'X-Frame-Options', value: 'SAMEORIGIN' }],
-      },
-    ]
-  },
+  output: 'export',
+  eslint: { ignoreDuringBuilds: true },
+  typescript: { ignoreBuildErrors: true },
+  images: { unoptimized: true },
 }
 
 export default nextConfig

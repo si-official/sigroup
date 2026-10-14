@@ -6,9 +6,10 @@ require_once BASE_PATH . '/vendor/autoload.php';
 
 use Dotenv\Dotenv;
 
-// Load environment
-if (file_exists(BASE_PATH . '/.env')) {
-    $dotenv = Dotenv::createImmutable(BASE_PATH);
+// Load environment — prefer .env.local for local dev
+$envFile = file_exists(BASE_PATH . '/.env.local') ? '.env.local' : '.env';
+if (file_exists(BASE_PATH . '/' . $envFile)) {
+    $dotenv = Dotenv::createImmutable(BASE_PATH, $envFile);
     $dotenv->load();
 }
 
