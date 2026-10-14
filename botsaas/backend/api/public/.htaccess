@@ -1,0 +1,40 @@
+# Front controller + hardening. Assumes DocumentRoot is this public/ dir.
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteBase /
+
+    # Force HTTPS (skip on localhost)
+    RewriteCond %{HTTPS} off
+    RewriteCond %{HTTP_HOST} !^localhost
+    RewriteCond %{HTTP_HOST} !^127\.0\.0\.1
+    RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+
+    # Real files served directly (uploads, widget.js)
+    RewriteCond %{REQUEST_FILENAME} -f [OR]
+    RewriteCond %{REQUEST_FILENAME} -d
+    RewriteRule ^ - [L]
+
+    # Everything else to the front controller
+    RewriteRule ^ index.php [L]
+</IfModule>
+
+# Never serve dotfiles, env, vcs, vendor, storage
+<FilesMatch "^\.">
+    Require all denied
+</FilesMatch>
+RedirectMatch 404 /\.(env|git|github)
+RedirectMatch 404 /(vendor|storage|database|src|routes|cron|cli)/
+
+<IfModule mod_headers.c>
+    Header always set X-Content-Type-Options "nosniff"
+    Header always set X-Frame-Options "SAMEORIGIN"
+    Header always set Referrer-Policy "strict-origin-when-cross-origin"
+    Header always set Strict-Transport-Security "max-age=31536000; includeSubDomains"
+    Header always unset X-Powered-By
+</IfModule>
+
+<IfModule mod_php.c>
+    php_flag display_errors off
+    php_value post_max_size 12M
+    php_value upload_max_filesize 10M
+</IfModule>

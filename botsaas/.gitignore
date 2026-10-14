@@ -1,0 +1,17 @@
+# backend
+backend/api/vendor/
+backend/api/.env
+backend/api/storage/logs/*.log
+backend/api/storage/uploads/
+
+# frontends
+apps/*/node_modules/
+apps/*/.next/
+apps/*/out/
+apps/*/.env
+apps/*/.env.local
+apps/*/next-env.d.ts
+apps/*/*.tsbuildinfo
+
+# os
+.DS_Store

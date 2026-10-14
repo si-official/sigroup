@@ -1,0 +1,34 @@
+{
+  "name": "chatcommerce/api",
+  "description": "AI Chat-Commerce SaaS \u2014 REST API",
+  "type": "project",
+  "require": {
+    "php": "^8.1",
+    "ext-pdo": "*",
+    "ext-json": "*",
+    "ext-openssl": "*",
+    "ext-mbstring": "*",
+    "firebase/php-jwt": "^6.10",
+    "vlucas/phpdotenv": "^5.6",
+    "guzzlehttp/guzzle": "^7.8"
+  },
+  "autoload": {
+    "psr-4": {
+      "App\\": "src/"
+    }
+  },
+  "scripts": {
+    "serve": "php -S localhost:8080 -t public",
+    "migrate": "php cli/migrate.php",
+    "work": "php cron/worker.php"
+  },
+  "config": {
+    "sort-packages": true,
+    "comment-platform": "Dependencies resolve against the PRODUCTION php version, not whatever is on the dev box. Set this to the Hostinger PHP version you select in hPanel.",
+    "platform": {
+      "php": "8.1.0"
+    },
+    "comment-platform-check": "Disabled because this dev box runs XAMPP PHP 8.0 (EOL) while the deploy target is 8.1+. The source is written to stay 8.0-parsable so `php -l` and tests/smoke.php remain real checks locally. Re-enable once the local PHP is upgraded.",
+    "platform-check": false
+  }
+}

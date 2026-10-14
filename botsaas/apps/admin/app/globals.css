@@ -1,0 +1,84 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/**
+ * Phase 1 lays down the token CONTRACT only; Phase 4 fills in the real ramps.
+ *
+ * The rule that must not be broken later: every colour is defined on bare
+ * :root first. A colour whose only definition lives inside a media query or a
+ * [data-theme] block disappears in the other theme.
+ */
+@layer base {
+  :root {
+    color-scheme: light;
+
+    --surface: 255 255 255;
+    --surface-2: 248 250 252;
+    --border: 226 232 240;
+    --content: 15 23 42;
+    --content-muted: 100 116 139;
+    --brand: 37 99 235;
+    --success: 22 163 74;
+    --warning: 217 119 6;
+    --danger: 220 38 38;
+  }
+
+  /* System preference, unless an explicit light choice overrides it. */
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme='light']) {
+      color-scheme: dark;
+
+      --surface: 15 23 42;
+      --surface-2: 30 41 59;
+      --border: 51 65 85;
+      --content: 241 245 249;
+      --content-muted: 148 163 184;
+      --brand: 96 165 250;
+      --success: 34 197 94;
+      --warning: 245 158 11;
+      --danger: 248 113 113;
+    }
+  }
+
+  /* Explicit choice wins in both directions. */
+  :root[data-theme='dark'] {
+    color-scheme: dark;
+
+    --surface: 15 23 42;
+    --surface-2: 30 41 59;
+    --border: 51 65 85;
+    --content: 241 245 249;
+    --content-muted: 148 163 184;
+    --brand: 96 165 250;
+    --success: 34 197 94;
+    --warning: 245 158 11;
+    --danger: 248 113 113;
+  }
+
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    @apply bg-surface text-content;
+    /* 1.7, not 1.5: Bangla descenders clip at tighter leading. */
+    line-height: 1.7;
+    /* Respect notched phones — this audience is overwhelmingly on mobile. */
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+
+  /* Visible focus for keyboard users; never remove it without a replacement. */
+  :focus-visible {
+    @apply outline-none ring-2 ring-brand ring-offset-2;
+    --tw-ring-offset-color: rgb(var(--surface));
+  }
+
+  /* Tap targets: 44px minimum on touch devices. */
+  @media (pointer: coarse) {
+    button, a[role='button'], input[type='checkbox'], input[type='radio'] {
+      min-height: 44px;
+      min-width: 44px;
+    }
+  }
+}
