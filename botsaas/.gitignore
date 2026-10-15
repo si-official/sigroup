@@ -15,3 +15,7 @@ apps/*/*.tsbuildinfo
 
 # os
 .DS_Store
+
+# Generated platform-admin credentials from cli/seed.php — never commit
+backend/api/storage/seed-admin.txt
+backend/api/storage/

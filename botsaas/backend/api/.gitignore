@@ -3,3 +3,7 @@
 /storage/logs/*.log
 /storage/uploads/
 composer.lock.bak
+
+# Generated platform-admin credentials from cli/seed.php — never commit
+/storage/seed-admin.txt
+/storage/
