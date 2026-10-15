@@ -16,6 +16,7 @@ require_once dirname(__DIR__) . '/vendor/autoload.php';
 
 use App\Core\Bootstrap;
 use App\Core\Db;
+use App\Core\Env;
 use App\Core\Logger;
 use App\Jobs\JobRunner;
 use App\Jobs\Queue;
@@ -61,7 +62,11 @@ try {
     if ($hour === 3 && $minute === 0) {
         // $queued += Queue::push('channel.token_health', [], null, Queue::PRIORITY_LOW, 'token.health.' . $now->format('Ymd'));
         // $queued += Queue::push('billing.expiry_notices', [], null, Queue::PRIORITY_LOW, 'expiry.' . $now->format('Ymd'));
-        $queued += retention($now);
+        $pruned = (new \App\Services\RetentionService())->prune();
+        $prunedTotal = array_sum($pruned);
+        if ($prunedTotal > 0) {
+            printf("[%s] retention: pruned %d rows\n", $now->format('Y-m-d H:i:s'), $prunedTotal);
+        }
     }
 
     (new JobRunner())->heartbeat(
@@ -78,37 +83,4 @@ try {
     (new JobRunner())->heartbeat('scheduler', 0, 0, 'error', $e->getMessage());
     fwrite(STDERR, '[scheduler] CRASHED: ' . $e->getMessage() . "\n");
     exit(1);
-}
-
-/**
- * Retention pruning, run inline because it is a handful of indexed DELETEs.
- * Shared-hosting databases have a hard size quota; without this the messages
- * and webhook_events tables will eventually consume it.
- */
-function retention(DateTimeImmutable $now): int
-{
-    $pruned = 0;
-
-    // Expired rate-limit buckets: tiny, frequent, keeps the PK hot.
-    $pruned += Db::execute('DELETE FROM rate_limits WHERE expires_at < NOW() LIMIT 5000');
-
-    // Completed jobs.
-    $days = \App\Core\Env::int('RETAIN_DONE_JOBS', 7);
-    $pruned += Db::execute(
-        "DELETE FROM jobs
-          WHERE status IN ('done','failed')
-            AND completed_at < DATE_SUB(NOW(), INTERVAL :d DAY)
-          LIMIT 5000",
-        ['d' => $days]
-    );
-
-    // Phase 2 tables, enabled once they exist:
-    // webhook_events > RETAIN_WEBHOOK_EVENTS, activity_logs > RETAIN_ACTIVITY_LOGS,
-    // ai_requests > RETAIN_AI_REQUESTS. LIMIT on every delete so one pass never
-    // locks a large table for minutes.
-
-    \App\Core\Logger::prune(\App\Core\Env::int('LOG_RETENTION_DAYS', 14));
-
-    Logger::info('retention.pruned', ['rows' => $pruned]);
-    return 0; // pruning is maintenance, not queued work
 }

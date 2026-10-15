@@ -170,7 +170,7 @@ logs `critical` so it is never silent.
 
 ---
 
-## 5. Two findings from Phase 1 that change the plan
+## 5. Findings that change the plan
 
 **`SKIP LOCKED` is unusable here.** The PROMPT 0 constraint specified
 `SELECT … FOR UPDATE SKIP LOCKED`. That syntax arrived in **MariaDB 10.6**, and
@@ -182,12 +182,112 @@ back its own rows. Works on MySQL 5.7+ and MariaDB 10.3+. The tradeoff is brief
 row-lock contention between concurrent workers instead of stepping over locked
 rows; at this scale that is milliseconds.
 
-**Decide the production PHP version before Phase 3.** `composer.json` pins
+**Argon2id is not available on every host — and bcrypt breaks Bangla.**
+`password_algos()` on this box returns only `2y`: PHP was built without
+libargon2, so `PASSWORD_ARGON2ID` is undefined and a hard dependency on it
+crashes registration. The fallback cannot be plain bcrypt either, because
+bcrypt truncates at **72 bytes** and a ~24-character Bangla passphrase already
+exceeds that — two different passwords sharing a 72-byte prefix would both
+unlock the account. `PasswordHasher` therefore uses Argon2id when present and
+otherwise bcrypt over `base64(sha384(password))`, a fixed 64-char input that
+can never be truncated. Hash prefixes keep both formats verifiable, and
+`needs_rehash` promotes bcrypt to Argon2id once a host gains support. **Check
+`password_algos()` on the production host and prefer a PHP build with
+libargon2.**
+
+**`?? 0` silently disabled every unlimited plan.** `limitFor()` read
+`$limits[$field] ?? 0`, and null-coalescing cannot distinguish "key absent"
+from "key is null". Null means *unlimited* here; 0 means *disabled*. Every
+Enterprise and credit-mode tenant would have been unable to send a single
+message while the pricing page advertised unlimited. Caught by
+`tests/quota_race.php`. General rule: never use `??` on a field whose null is
+semantic.
+
+**Decide the production PHP version before Phase 4.** `composer.json` pins
 `config.platform.php` to the deploy target so dependencies resolve for
 production rather than for whatever is on the dev box. The dev box here is
 XAMPP PHP **8.0.28**, which is end-of-life. Select 8.2 or 8.3 in hPanel, match
 `config.platform.php` to it, and upgrade local PHP — then re-enable
 `config.platform-check`.
+
+---
+
+## 5b. Phase 3 — auth, tenancy, package gating
+
+**Two enforcement mechanisms, deliberately separate:**
+
+| | Question it answers | Mechanism | Failure |
+|---|---|---|---|
+| Feature gate | "Does your plan include this at all?" | `RequirePackageFeature` reads a boolean from resolved limits | 402 `FEATURE_NOT_IN_PLAN` + `upgrade_url`, `feature_label` |
+| Quota gate | "Have you used it up this cycle?" | `QuotaService` conditional UPDATE | 402 `QUOTA_EXCEEDED` + `used`, `limit` |
+
+**Limits resolution lives in exactly one class** (`LimitsResolver`), consulted by
+middleware, QuotaService, jobs and the admin panel alike. Order: `limits_snapshot`
+→ `packages` row → credit-mode thresholds, with credit mode short-circuiting
+first because it is a different billing universe, not a fallback.
+
+**Expiry is read-only, not lockout.** `RequirePermission` blocks write actions
+and lets `.view` actions through, so a lapsed customer keeps full visibility of
+their orders and conversations. Locking them out of their own data turns a
+renewal conversation into a chargeback.
+
+**The quota race, and why `check()`-then-`write` is wrong.** Two webhooks in the
+same millisecond both read `used=49`, both see `49 < 50`, both write. One unit
+billed, two messages sent. `QuotaService::consume()` instead lets the database
+do the comparison inside the write:
+
+```sql
+UPDATE subscription_usage SET fb_messages = fb_messages + :n
+ WHERE id = :id AND fb_messages + :n <= :limit
+```
+
+InnoDB serialises the two statements; the second re-evaluates the WHERE against
+the incremented value and affects zero rows. **Affected-rows is the
+authoritative answer** — a follow-up SELECT would reintroduce the race.
+
+**State metrics are different.** `products` and `staff_seats` measure current
+state, not consumption, so deleting a product must return the slot. Those use
+`reserveState()`, which serialises per tenant on a `tenants` row lock. Affordable
+because product creation happens a few times a day, not a few times a second.
+
+**Permission matrix** (`Support/Permissions.php`): one declarative table, and
+unknown actions **deny by default** so a forgotten entry fails closed. The split
+— agent answers customers; manager runs the shop; owner alone touches money,
+channel credentials and staff — exists because agents are often part-time staff
+on a shared device.
+
+---
+
+## 5c. Phase 2 — schema, repositories, seeds
+
+61 tables across 13 migrations. **Phase 2 was run after Phase 3**, so
+`001`-`005` were already applied (platform bootstrap, queue fix, identity,
+billing, bot defaults) and this phase continued at `006` rather than
+renumbering — editing an applied migration is the one thing the runner's
+checksum drift detection exists to catch.
+
+`SCHEMA-REVIEW.md` records what was changed in the source schema and why. The
+three findings that would have failed silently in production:
+
+1. **FULLTEXT cannot serve a Bangla/Banglish catalogue.** A customer typing
+   `shari` never matches `শাড়ি`, and InnoDB discards tokens under 3
+   characters entirely. Fixed with a normalised `search_blob` plus
+   transliteration, behind a three-tier search.
+2. **The channel token-health cron could never use its index** — it filters
+   `is_active`, the index led with `status`. It full-scanned every channel on
+   the platform, daily.
+3. **The courier sync query asks `status NOT IN (...)`** — a negative
+   condition no B-tree serves. Re-led the index with the time column.
+
+Query plans are audited rather than assumed: `tests/explain_check.php` builds
+a tenant with ~4,800 messages and 250 orders, runs **30 real queries** through
+EXPLAIN, and fails any that reaches `type=ALL`. It also verifies that the 17
+load-bearing indexes exist — because an index the optimiser skips at demo
+scale still has to be there at production scale.
+
+Repository design is documented in `backend/api/src/Repositories/README.md`:
+15 classes with real query methods, the remaining ~32 tables served by
+`BaseRepository` directly rather than by ceremony subclasses.
 
 ---
 
@@ -200,14 +300,25 @@ XAMPP PHP **8.0.28**, which is end-of-life. Select 8.2 or 8.3 in hPanel, match
 | `tests/smoke.php` | **45/45** — Crypto, Money, Validator, Router, Response, Request |
 | `tests/queue_probe.php` | **17/17** — dedupe, priority, retry/backoff, stale reclaim, heartbeat |
 | `tests/tenant_isolation.php` | **31/31** — cross-tenant read/write/update/delete, raw-SQL guard, identifier injection, pagination |
+| `tests/auth_flow.php` | **68/68** — hashing incl. Bangla >72 bytes, timing equalisation, registration rollback, throttle + lockout, rotation, replay→family revocation, reset, limits order, permission matrix |
+| `tests/quota_race.php` | **15/15** — ACCEPTANCE (b): 100 processes vs limit 50 → exactly 50 |
+| `tests/repositories.php` | **72/72** — cross-script search, inbox denormalisation, order lifecycle + stock, duplicate guards, webhook/comment idempotency, model routing, retention safety |
+| `tests/explain_check.php` | **30 plans clean, 0 scans, 17/17 indexes present** |
+| `tests/api_isolation.php` | **50/50** — ACCEPTANCE (a) and (c) over real HTTP |
+| Pricing monotonicity | assertion verified to FIRE on the competitor's real inverted-tier bug |
 | `GET /api/health/deep` | reports queue depth, cron staleness, migration drift |
 | CORS preflight | 204 + ACAO for allowed origin; no ACAO for unknown origin |
 | Routing | 404 for unknown path, **405** (not 404) for wrong method |
 | Migrations | status → dry-run → apply → idempotent re-run → drift detection |
 | Rate limiter with DB down | fails open, logs `critical` |
 
-**Not yet verified:** nothing in this phase. Phase 3 adds the concurrency test
-for quota races, which needs the `QuotaService` that phase introduces.
+Run everything with `tests/run-all.sh` (**298 assertions + 30 query plans**). Repeatable: the HTTP
+suite clears its own rate-limit buckets, since `/api/auth/register` is
+legitimately capped at 5 per IP per hour.
+
+**Acceptance (a)** is proven black-box: two real tenants, real JWTs, tenant A
+attacking tenant B's rows through the actual HTTP stack — not by calling
+repositories, which would skip the middleware being tested.
 
 ---
 

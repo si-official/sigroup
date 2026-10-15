@@ -65,6 +65,7 @@ abstract class BaseRepository
         'comment_logs', 'followup_sequences', 'followup_jobs', 'activity_logs',
         'analytics_daily', 'notifications', 'support_tickets', 'api_tokens',
         'media_files',
+        'whatsapp_templates', 'email_verifications', 'password_resets', 'product_variants', 'order_items', 'followup_steps', 'message_batches',
     ];
 
     public function __construct(?int $tenantId = null)
